@@ -65,7 +65,7 @@ class projector:
     def display(self, image_path):
 
         slice_pil_image = Image.open(image_path)
-        slice_vig_image = ImageChops.darker(slice_pil_image,self.vignette)
+        slice_vig_image = ImageChops.multiply(slice_pil_image,self.vignette)
 
         #slice_image = pygame.image.load(image_path)
         slice_image = pygame.image.fromstring(slice_vig_image.tostring(),slice_vig_image.size,slice_vig_image.mode)

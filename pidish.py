@@ -19,7 +19,7 @@ from servo import BED_servo
 from projector import projector
 
 usageStr = """
-Usage:      python pidish.py object_dir
+Usage:      sudo python pidish.py object_dir
 
     object_dir  Directory path with slice images
 
@@ -48,29 +48,30 @@ Z_DISTANCE_PER_STEP     = 0.44      # microns
 LIFT_LENGTH             = 103000    # microns
 OPTIMUM_LIFT_SPEED      = 5280      # microns/s
 
-RESIN_TOP               = 25400     # microns
+RESIN_TOP               = 25800     # microns
+LIFT_PLATE_THICKNESS    = 5000      # microns
 
-DIP_DISTANCE            = 4000      # microns
+DIP_DISTANCE            = 3000      # microns
 DIP_WAIT                = 2.0       # seconds
-DIP_SPEED_DOWN          = 528       # microns/s
-DIP_SPEED_UP            = 528       # microns/s
-RESIN_SETTLE            = 10.0      # seconds
+DIP_SPEED_DOWN          = 1000      # microns/s
+DIP_SPEED_UP            = 1000      # microns/s
+RESIN_SETTLE            = 8.0       # seconds
 
-FIRST_SLICE_TIME        = 17.5      # seconds
-FIRST_SLICE_NUM         = 1
-FIRST_SLICE_THICKNESS   = 200       # microns
+FIRST_SLICE_TIME        = 26.0      # seconds
+FIRST_SLICE_NUM         = 3
+FIRST_SLICE_THICKNESS   = 100       # microns
 
-SLICE_DISPLAY_TIME      = 6.5       # seconds
+SLICE_DISPLAY_TIME      = 13.0      # seconds
 SLICE_THICKNESS         = 100       # microns
 
-CALIBRATE_MIN_TIME      = 4.5       # seconds
-CALIBRATE_TIME_DELTA    = 0.25      # seconds
-CALIBRATE_HEIGHT        = 10000     # microns
+CALIBRATE_MIN_TIME      = 7.0       # seconds
+CALIBRATE_TIME_DELTA    = 0.5       # seconds
+CALIBRATE_HEIGHT        = 5000      # microns
 
-SUPERCALI_MIN_TIME      = 5.0       # seconds
-SUPERCALI_TIME_DELTA    = 2.0       # seconds
-SUPERCALI_BASE_HEIGHT   = 2000      # microns
-SUPERCALI_POST_HEIGHT   = 4000      # microns
+SUPERCALI_MIN_TIME      = 7.0       # seconds
+SUPERCALI_TIME_DELTA    = 1.5       # seconds
+SUPERCALI_BASE_HEIGHT   = 0000      # microns
+SUPERCALI_POST_HEIGHT   = 5000      # microns
 
 
 
@@ -86,11 +87,20 @@ def setup_resin(display, lift):
 
     display.black()
 
+    # Quickly move to resin
+    lift.move_to(RESIN_TOP-LIFT_PLATE_THICKNESS, OPTIMUM_LIFT_SPEED)
+
+    # Slowly dip
     lift.move_to(RESIN_TOP+DIP_DISTANCE, DIP_SPEED_DOWN)
     time.sleep(DIP_WAIT)
     lift.move_to(RESIN_TOP, DIP_SPEED_UP)
 
-    raw_input("Pop any bubbles that formed. Handle water spots. Press Enter to continue.")
+    print("Pop any bubbles that formed. Handle water spots.")
+    adjust = 1
+    while adjust != '':
+        adjust = raw_input("Microns to adjust, or enter to start print: ")
+        if adjust != '':
+            lift.move_microns(int(adjust), DIP_SPEED_DOWN)
 
 
 ###############################################################################
@@ -165,31 +175,32 @@ def supercali():
         start_time = time.time()
 
         base_num_slices = (SUPERCALI_BASE_HEIGHT-FIRST_SLICE_THICKNESS)/SLICE_THICKNESS + 1
+        base_num_slices = 0
 
-        for i in xrange(base_num_slices):
-            display_status(start_time,i)
+        #~ for i in xrange(base_num_slices):
+            #~ display_status(start_time,i)
 
-            if i < FIRST_SLICE_NUM:
-                thickness = FIRST_SLICE_THICKNESS
-                display_time = FIRST_SLICE_TIME
-            else:
-                thickness = SLICE_THICKNESS
-                display_time = SLICE_DISPLAY_TIME
+            #~ if i < FIRST_SLICE_NUM:
+                #~ thickness = FIRST_SLICE_THICKNESS
+                #~ display_time = FIRST_SLICE_TIME
+            #~ else:
+                #~ thickness = SLICE_THICKNESS
+                #~ display_time = SLICE_DISPLAY_TIME
 
-            if i == FIRST_SLICE_NUM:
-                dip_speed = 100
-            else:
-                dip_speed = DIP_SPEED_DOWN
+            #~ if i == FIRST_SLICE_NUM:
+                #~ dip_speed = 100
+            #~ else:
+                #~ dip_speed = DIP_SPEED_DOWN
 
-            lift.move_microns(DIP_DISTANCE, dip_speed)
-            time.sleep(DIP_WAIT)
-            lift.move_microns(-DIP_DISTANCE+thickness, DIP_SPEED_UP)
-            time.sleep(RESIN_SETTLE)
+            #~ lift.move_microns(DIP_DISTANCE, dip_speed)
+            #~ time.sleep(DIP_WAIT)
+            #~ lift.move_microns(-DIP_DISTANCE+thickness, DIP_SPEED_UP)
+            #~ time.sleep(RESIN_SETTLE)
 
-            display.display(SLICE_PREFIX+"basegrad.png")
-            time.sleep(display_time)
+            #~ display.display(SLICE_PREFIX+"base.png")
+            #~ time.sleep(display_time)
 
-            display.black()
+            #~ display.black()
 
         post_num_slices = SUPERCALI_POST_HEIGHT/SLICE_THICKNESS
 

@@ -142,11 +142,11 @@ class BED_servo:
         time_offset = 0.5/speed
 
         if (steps < 0):
-            GPIO.output(self.dir_pin, True)
+            GPIO.output(self.dir_pin, False)
             steps = -steps
             delta_location = -1
         else:
-            GPIO.output(self.dir_pin, False)
+            GPIO.output(self.dir_pin, True)
 
         for _ in xrange(steps):
 

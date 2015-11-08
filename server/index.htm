@@ -1,0 +1,37 @@
+<html><head><title>Simple 3D Printer</title></head>
+<body style="text-align:center">
+<div style="max-width:40em;text-align:left;margin-left:auto;margin-right:auto;">
+
+<iframe src="status" height="150px" width="100%">Status here</iframe>
+
+<div style="float:left;width:15em;text-align:center;padding:1em;border:1px black solid;">
+<h3>Lift Controls</h3>
+<form action="" method="post">
+<input type="submit" name="command" value="Home" style="width:100%">
+</form>
+<br>
+<form action="" method="post">
+<input type="hidden" name="command" value="lift_move">
+<input type="submit" name="dir" value="Up" style="width:100%"><br>
+<table style="margin-left: auto;margin-right: auto;">
+<tr><td style="text-align:right">Microns:</td><td><input name="amount" value="1000" style="width:4em"></td></tr>
+<tr><td style="text-align:right">Microns / Sec:</td><td><input name="speed" value="5280" style="width:4em"></td></tr>
+</table>
+<input type="submit" name="dir" value="Down" style="width:100%">
+</form>
+</div>
+
+<div style="float:left;width:10em;text-align:center;padding:1em;border:1px black solid;">
+<h3>Projector Controls</h3>
+<form action="" method="post">
+<input type="submit" name="command" value="Blank" style="width:100%">
+</form>
+<form action="" method="post">
+<input type="submit" name="command" value="Focus" style="width:100%">
+</form>
+</div>
+
+</div>
+
+
+</body></html>

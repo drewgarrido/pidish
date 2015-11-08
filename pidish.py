@@ -43,27 +43,41 @@ SERVO_SLEEP     = 33
 SERVO_STEP      = 32
 SERVO_DIRECTION = 31
 
-
-Z_DISTANCE_PER_STEP     = 0.44      # microns
+# Printer dimensions
+Z_DISTANCE_PER_STEP     = 0.439453125 # microns
 LIFT_LENGTH             = 103000    # microns
 OPTIMUM_LIFT_SPEED      = 5280      # microns/s
 
-RESIN_TOP               = 25800     # microns
+# Resin vat maintenance
+RESIN_TOP               = 25400     # microns
 LIFT_PLATE_THICKNESS    = 5000      # microns
 
+# Dip controls
 DIP_DISTANCE            = 3000      # microns
 DIP_WAIT                = 2.0       # seconds
-DIP_SPEED_DOWN          = 1000      # microns/s
-DIP_SPEED_UP            = 1000      # microns/s
+DIP_SPEED_DOWN          = 1000       # microns/s
+DIP_SPEED_UP            = DIP_SPEED_DOWN                # microns/s
 RESIN_SETTLE            = 8.0       # seconds
 
-FIRST_SLICE_TIME        = 26.0      # seconds
-FIRST_SLICE_NUM         = 3
-FIRST_SLICE_THICKNESS   = 100       # microns
+SLOW_DIP_SPEED          = 20        # microns/s
+SLOW_DIP_DIST           = 1000      # microns
 
-SLICE_DISPLAY_TIME      = 13.0      # seconds
+# Exposure controls
+SLICE_DISPLAY_TIME      = 18.0      # seconds
 SLICE_THICKNESS         = 100       # microns
 
+FIRST_SLICE_TIME        = 55.0      # seconds
+FIRST_SLICE_NUM         = 3
+FIRST_SLICE_THICKNESS   = SLICE_THICKNESS               # microns
+
+SLICE_DIRECTIONS        = [
+    #slice              method      display_time
+    [0,                 "cont",     FIRST_SLICE_TIME    ],
+    [FIRST_SLICE_NUM,   "cont",     SLICE_DISPLAY_TIME  ],
+    [40,                "dip",      SLICE_DISPLAY_TIME  ],
+]
+
+# Calibration controls
 CALIBRATE_MIN_TIME      = 7.0       # seconds
 CALIBRATE_TIME_DELTA    = 0.5       # seconds
 CALIBRATE_HEIGHT        = 5000      # microns
@@ -72,7 +86,6 @@ SUPERCALI_MIN_TIME      = 7.0       # seconds
 SUPERCALI_TIME_DELTA    = 1.5       # seconds
 SUPERCALI_BASE_HEIGHT   = 0000      # microns
 SUPERCALI_POST_HEIGHT   = 5000      # microns
-
 
 
 ###############################################################################
@@ -117,6 +130,29 @@ def display_status(start_time, current_slice):
         time_remain = ((NUM_SLICES+0.0)/current_slice - 1.0)*(delta)
         time_remain_str = time.strftime('%H:%M:%S', time.gmtime(time_remain))
         print "Layer {:d} of {:d}. {:s} Remaining.".format(current_slice, NUM_SLICES, time_remain_str)
+
+###############################################################################
+##
+#   Expands SLICE_DIRECTIONS to give explicit directions per slice, as
+#   SLICE_DIRECTIONS implies the same parameters are used between slices
+#
+#   @return tuple with directions for every slice
+##
+###############################################################################
+def expand_slice_directions():
+    global SLICE_DIRECTIONS
+
+    step = 0
+    slice_stats = []
+
+    for i in xrange(NUM_SLICES):
+        if step < len(SLICE_DIRECTIONS)-1:
+            if i == SLICE_DIRECTIONS[step + 1][0]:
+                step = step + 1
+
+        slice_stats.append(SLICE_DIRECTIONS[step][1:])
+
+    return slice_stats
 
 ###############################################################################
 ##
@@ -241,6 +277,8 @@ def print_object():
     lift = BED_servo(Z_DISTANCE_PER_STEP)
 
     try:
+        slice_stats = expand_slice_directions()
+
         setup_resin(display, lift)
         start_time = time.time()
 
@@ -248,24 +286,49 @@ def print_object():
 
             display_status(start_time, i)
 
-            lift.move_microns(DIP_DISTANCE, DIP_SPEED_DOWN)
-            time.sleep(DIP_WAIT)
-            lift.move_microns(-DIP_DISTANCE+SLICE_THICKNESS, DIP_SPEED_UP)
-            time.sleep(RESIN_SETTLE)
+            method, display_time = slice_stats[i]
 
-            display.display(SLICE_PREFIX+"{:04d}.png".format(i))
+            slice_image = SLICE_PREFIX+"{:04d}.png".format(i)
 
-            if i < FIRST_SLICE_NUM:
-                time.sleep(FIRST_SLICE_TIME)
-            else:
-                time.sleep(SLICE_DISPLAY_TIME)
+            if method == "dip":
 
-            display.black()
+                display.black()
+
+                lift.move_microns(DIP_DISTANCE, DIP_SPEED_DOWN)
+                time.sleep(DIP_WAIT)
+                lift.move_microns(-DIP_DISTANCE+SLICE_THICKNESS, DIP_SPEED_UP)
+
+                time.sleep(RESIN_SETTLE)
+
+                display.display(slice_image)
+                time.sleep(display_time)
+
+            elif method == "cont":
+                display.display(slice_image)
+                lift.move_microns(SLICE_THICKNESS, SLICE_THICKNESS / display_time)
+
+            elif method == "bottom":
+                display.display(slice_image)
+                time.sleep(display_time)
+
+            elif method == "slow dip":
+                display.black()
+
+                lift.move_microns(SLOW_DIP_DIST, SLOW_DIP_SPEED)
+                time.sleep(DIP_WAIT)
+                lift.move_microns(-SLOW_DIP_DIST+SLICE_THICKNESS, SLOW_DIP_SPEED)
+
+                time.sleep(RESIN_SETTLE)
+
+                display.display(slice_image)
+                time.sleep(display_time)
+
 
         print "Print completed in " + time.strftime('%H:%M:%S', time.gmtime(time.time()-start_time))
     except:
         traceback.print_exception(*sys.exc_info())
 
+    display.black()
     lift.home(OPTIMUM_LIFT_SPEED)
     lift.shutdown()
     display.shutdown()

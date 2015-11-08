@@ -32,7 +32,7 @@ class BED_servo:
     #   @param  pin     Board GPIO pin servo is connected to.
     ##
     ###########################################################################
-    def __init__(self,  microns_per_step = 0.44,
+    def __init__(self,  microns_per_step = 0.439453125,
                         enable_pin = 40,
                         ms1_pin = 38,
                         ms2_pin = 37,

@@ -21,7 +21,7 @@ from projector import projector
 usageStr = """
 Usage:      sudo python pidish.py object_dir
 
-    object_dir  Directory path with slice images
+	object_dir  Directory path with slice images
 
 Ensure the lift is in the home position (the top) before running.
 
@@ -71,10 +71,10 @@ FIRST_SLICE_NUM         = 3
 FIRST_SLICE_THICKNESS   = SLICE_THICKNESS               # microns
 
 SLICE_DIRECTIONS        = [
-    #slice              method      display_time
-    [0,                 "cont",     FIRST_SLICE_TIME    ],
-    [FIRST_SLICE_NUM,   "cont",     SLICE_DISPLAY_TIME  ],
-    [40,                "dip",      SLICE_DISPLAY_TIME  ],
+	#slice              method      display_time
+	[0,                 "cont",     FIRST_SLICE_TIME    ],
+	[FIRST_SLICE_NUM,   "cont",     SLICE_DISPLAY_TIME  ],
+	[40,                "dip",      SLICE_DISPLAY_TIME  ],
 ]
 
 # Calibration controls
@@ -98,22 +98,22 @@ SUPERCALI_POST_HEIGHT   = 5000      # microns
 ###############################################################################
 def setup_resin(display, lift):
 
-    display.black()
+	display.black()
 
-    # Quickly move to resin
-    lift.move_to(RESIN_TOP-LIFT_PLATE_THICKNESS, OPTIMUM_LIFT_SPEED)
+	# Quickly move to resin
+	lift.move_to(RESIN_TOP-LIFT_PLATE_THICKNESS, OPTIMUM_LIFT_SPEED)
 
-    # Slowly dip
-    lift.move_to(RESIN_TOP+DIP_DISTANCE, DIP_SPEED_DOWN)
-    time.sleep(DIP_WAIT)
-    lift.move_to(RESIN_TOP, DIP_SPEED_UP)
+	# Slowly dip
+	lift.move_to(RESIN_TOP+DIP_DISTANCE, DIP_SPEED_DOWN)
+	time.sleep(DIP_WAIT)
+	lift.move_to(RESIN_TOP, DIP_SPEED_UP)
 
-    print("Pop any bubbles that formed. Handle water spots.")
-    adjust = 1
-    while adjust != '':
-        adjust = raw_input("Microns to adjust, or enter to start print: ")
-        if adjust != '':
-            lift.move_microns(int(adjust), DIP_SPEED_DOWN)
+	print("Pop any bubbles that formed. Handle water spots.")
+	adjust = 1
+	while adjust != '':
+		adjust = raw_input("Microns to adjust, or enter to start print: ")
+		if adjust != '':
+			lift.move_microns(int(adjust), DIP_SPEED_DOWN)
 
 
 ###############################################################################
@@ -125,11 +125,11 @@ def setup_resin(display, lift):
 ##
 ###############################################################################
 def display_status(start_time, current_slice):
-    if (current_slice > 0):
-        delta = time.time() - start_time
-        time_remain = ((NUM_SLICES+0.0)/current_slice - 1.0)*(delta)
-        time_remain_str = time.strftime('%H:%M:%S', time.gmtime(time_remain))
-        print "Layer {:d} of {:d}. {:s} Remaining.".format(current_slice, NUM_SLICES, time_remain_str)
+	if (current_slice > 0):
+		delta = time.time() - start_time
+		time_remain = ((NUM_SLICES+0.0)/current_slice - 1.0)*(delta)
+		time_remain_str = time.strftime('%H:%M:%S', time.gmtime(time_remain))
+		print "Layer {:d} of {:d}. {:s} Remaining.".format(current_slice, NUM_SLICES, time_remain_str)
 
 ###############################################################################
 ##
@@ -140,19 +140,19 @@ def display_status(start_time, current_slice):
 ##
 ###############################################################################
 def expand_slice_directions():
-    global SLICE_DIRECTIONS
+	global SLICE_DIRECTIONS
 
-    step = 0
-    slice_stats = []
+	step = 0
+	slice_stats = []
 
-    for i in xrange(NUM_SLICES):
-        if step < len(SLICE_DIRECTIONS)-1:
-            if i == SLICE_DIRECTIONS[step + 1][0]:
-                step = step + 1
+	for i in xrange(NUM_SLICES):
+		if step < len(SLICE_DIRECTIONS)-1:
+			if i == SLICE_DIRECTIONS[step + 1][0]:
+				step = step + 1
 
-        slice_stats.append(SLICE_DIRECTIONS[step][1:])
+		slice_stats.append(SLICE_DIRECTIONS[step][1:])
 
-    return slice_stats
+	return slice_stats
 
 ###############################################################################
 ##
@@ -160,42 +160,42 @@ def expand_slice_directions():
 ##
 ###############################################################################
 def calibrate():
-    display = projector()
-    lift = BED_servo(Z_DISTANCE_PER_STEP)
+	display = projector()
+	lift = BED_servo(Z_DISTANCE_PER_STEP)
 
-    try:
-        setup_resin(display, lift)
-        start_time = time.time()
+	try:
+		setup_resin(display, lift)
+		start_time = time.time()
 
-        for i in xrange(NUM_SLICES):
-            display_status(start_time,i)
+		for i in xrange(NUM_SLICES):
+			display_status(start_time,i)
 
-            lift.move_microns(DIP_DISTANCE, DIP_SPEED_DOWN)
-            time.sleep(DIP_WAIT)
-            lift.move_microns(-DIP_DISTANCE+SLICE_THICKNESS, DIP_SPEED_UP)
-            time.sleep(RESIN_SETTLE)
+			lift.move_microns(DIP_DISTANCE, DIP_SPEED_DOWN)
+			time.sleep(DIP_WAIT)
+			lift.move_microns(-DIP_DISTANCE+SLICE_THICKNESS, DIP_SPEED_UP)
+			time.sleep(RESIN_SETTLE)
 
-            display.display(SLICE_PREFIX+"0000.png")
+			display.display(SLICE_PREFIX+"0000.png")
 
-            if i < FIRST_SLICE_NUM:
-                time.sleep(FIRST_SLICE_TIME)
-            else:
-                time.sleep(CALIBRATE_MIN_TIME)
+			if i < FIRST_SLICE_NUM:
+				time.sleep(FIRST_SLICE_TIME)
+			else:
+				time.sleep(CALIBRATE_MIN_TIME)
 
-                for j in xrange(1,9):
-                    display.display(SLICE_PREFIX+"{:04d}.png".format(j))
-                    time.sleep(CALIBRATE_TIME_DELTA)
+				for j in xrange(1,9):
+					display.display(SLICE_PREFIX+"{:04d}.png".format(j))
+					time.sleep(CALIBRATE_TIME_DELTA)
 
-            display.black()
+			display.black()
 
-        print "Print completed in " + time.strftime('%H:%M:%S', time.gmtime(time.time()-start_time))
+		print "Print completed in " + time.strftime('%H:%M:%S', time.gmtime(time.time()-start_time))
 
-    except:
-        traceback.print_exception(*sys.exc_info())
+	except:
+		traceback.print_exception(*sys.exc_info())
 
-    lift.home(OPTIMUM_LIFT_SPEED)
-    lift.shutdown()
-    display.shutdown()
+	lift.home(OPTIMUM_LIFT_SPEED)
+	lift.shutdown()
+	display.shutdown()
 
 ###############################################################################
 ##
@@ -203,69 +203,69 @@ def calibrate():
 ##
 ###############################################################################
 def supercali():
-    display = projector()
-    lift = BED_servo(Z_DISTANCE_PER_STEP)
+	display = projector()
+	lift = BED_servo(Z_DISTANCE_PER_STEP)
 
-    try:
-        setup_resin(display, lift)
-        start_time = time.time()
+	try:
+		setup_resin(display, lift)
+		start_time = time.time()
 
-        base_num_slices = (SUPERCALI_BASE_HEIGHT-FIRST_SLICE_THICKNESS)/SLICE_THICKNESS + 1
-        base_num_slices = 0
+		base_num_slices = (SUPERCALI_BASE_HEIGHT-FIRST_SLICE_THICKNESS)/SLICE_THICKNESS + 1
+		base_num_slices = 0
 
-        #~ for i in xrange(base_num_slices):
-            #~ display_status(start_time,i)
+		#~ for i in xrange(base_num_slices):
+			#~ display_status(start_time,i)
 
-            #~ if i < FIRST_SLICE_NUM:
-                #~ thickness = FIRST_SLICE_THICKNESS
-                #~ display_time = FIRST_SLICE_TIME
-            #~ else:
-                #~ thickness = SLICE_THICKNESS
-                #~ display_time = SLICE_DISPLAY_TIME
+			#~ if i < FIRST_SLICE_NUM:
+				#~ thickness = FIRST_SLICE_THICKNESS
+				#~ display_time = FIRST_SLICE_TIME
+			#~ else:
+				#~ thickness = SLICE_THICKNESS
+				#~ display_time = SLICE_DISPLAY_TIME
 
-            #~ if i == FIRST_SLICE_NUM:
-                #~ dip_speed = 100
-            #~ else:
-                #~ dip_speed = DIP_SPEED_DOWN
+			#~ if i == FIRST_SLICE_NUM:
+				#~ dip_speed = 100
+			#~ else:
+				#~ dip_speed = DIP_SPEED_DOWN
 
-            #~ lift.move_microns(DIP_DISTANCE, dip_speed)
-            #~ time.sleep(DIP_WAIT)
-            #~ lift.move_microns(-DIP_DISTANCE+thickness, DIP_SPEED_UP)
-            #~ time.sleep(RESIN_SETTLE)
+			#~ lift.move_microns(DIP_DISTANCE, dip_speed)
+			#~ time.sleep(DIP_WAIT)
+			#~ lift.move_microns(-DIP_DISTANCE+thickness, DIP_SPEED_UP)
+			#~ time.sleep(RESIN_SETTLE)
 
-            #~ display.display(SLICE_PREFIX+"base.png")
-            #~ time.sleep(display_time)
+			#~ display.display(SLICE_PREFIX+"base.png")
+			#~ time.sleep(display_time)
 
-            #~ display.black()
+			#~ display.black()
 
-        post_num_slices = SUPERCALI_POST_HEIGHT/SLICE_THICKNESS
+		post_num_slices = SUPERCALI_POST_HEIGHT/SLICE_THICKNESS
 
-        for i in xrange(post_num_slices):
-            display_status(start_time,i+base_num_slices)
+		for i in xrange(post_num_slices):
+			display_status(start_time,i+base_num_slices)
 
-            lift.move_microns(DIP_DISTANCE, DIP_SPEED_DOWN)
-            time.sleep(DIP_WAIT)
-            lift.move_microns(-DIP_DISTANCE+SLICE_THICKNESS, DIP_SPEED_UP)
-            time.sleep(RESIN_SETTLE)
+			lift.move_microns(DIP_DISTANCE, DIP_SPEED_DOWN)
+			time.sleep(DIP_WAIT)
+			lift.move_microns(-DIP_DISTANCE+SLICE_THICKNESS, DIP_SPEED_UP)
+			time.sleep(RESIN_SETTLE)
 
-            display.display(SLICE_PREFIX+"0000.png")
+			display.display(SLICE_PREFIX+"0000.png")
 
-            time.sleep(SUPERCALI_MIN_TIME)
+			time.sleep(SUPERCALI_MIN_TIME)
 
-            for j in xrange(1,9):
-                display.display(SLICE_PREFIX+"{:04d}.png".format(j))
-                time.sleep(SUPERCALI_TIME_DELTA)
+			for j in xrange(1,9):
+				display.display(SLICE_PREFIX+"{:04d}.png".format(j))
+				time.sleep(SUPERCALI_TIME_DELTA)
 
-            display.black()
+			display.black()
 
-        print "Print completed in " + time.strftime('%H:%M:%S', time.gmtime(time.time()-start_time))
+		print "Print completed in " + time.strftime('%H:%M:%S', time.gmtime(time.time()-start_time))
 
-    except:
-        traceback.print_exception(*sys.exc_info())
+	except:
+		traceback.print_exception(*sys.exc_info())
 
-    lift.home(OPTIMUM_LIFT_SPEED)
-    lift.shutdown()
-    display.shutdown()
+	lift.home(OPTIMUM_LIFT_SPEED)
+	lift.shutdown()
+	display.shutdown()
 
 ###############################################################################
 ##
@@ -273,65 +273,65 @@ def supercali():
 ##
 ###############################################################################
 def print_object():
-    display = projector()
-    lift = BED_servo(Z_DISTANCE_PER_STEP)
+	display = projector()
+	lift = BED_servo(Z_DISTANCE_PER_STEP)
 
-    try:
-        slice_stats = expand_slice_directions()
+	try:
+		slice_stats = expand_slice_directions()
 
-        setup_resin(display, lift)
-        start_time = time.time()
+		setup_resin(display, lift)
+		start_time = time.time()
 
-        for i in xrange(NUM_SLICES):
+		for i in xrange(NUM_SLICES):
 
-            display_status(start_time, i)
+			display_status(start_time, i)
 
-            method, display_time = slice_stats[i]
+			method, display_time = slice_stats[i]
 
-            slice_image = SLICE_PREFIX+"{:04d}.png".format(i)
+			slice_image = SLICE_PREFIX+"{:04d}.png".format(i)
 
-            if method == "dip":
+			if method == "dip":
 
-                display.black()
+				display.black()
 
-                lift.move_microns(DIP_DISTANCE, DIP_SPEED_DOWN)
-                time.sleep(DIP_WAIT)
-                lift.move_microns(-DIP_DISTANCE+SLICE_THICKNESS, DIP_SPEED_UP)
+				lift.move_microns(DIP_DISTANCE, DIP_SPEED_DOWN)
+				time.sleep(DIP_WAIT)
+				lift.move_microns(-DIP_DISTANCE+SLICE_THICKNESS, DIP_SPEED_UP)
 
-                time.sleep(RESIN_SETTLE)
+				time.sleep(RESIN_SETTLE)
 
-                display.display(slice_image)
-                time.sleep(display_time)
+				display.display(slice_image)
+				time.sleep(display_time)
 
-            elif method == "cont":
-                display.display(slice_image)
-                lift.move_microns(SLICE_THICKNESS, SLICE_THICKNESS / display_time)
+			elif method == "cont":
+				display.display(slice_image)
+				lift.move_microns(SLICE_THICKNESS, SLICE_THICKNESS / display_time)
 
-            elif method == "bottom":
-                display.display(slice_image)
-                time.sleep(display_time)
+			elif method == "bottom":
+				display.display(slice_image)
+				time.sleep(display_time)
 
-            elif method == "slow dip":
-                display.black()
+			elif method == "slow dip":
+				display.black()
 
-                lift.move_microns(SLOW_DIP_DIST, SLOW_DIP_SPEED)
-                time.sleep(DIP_WAIT)
-                lift.move_microns(-SLOW_DIP_DIST+SLICE_THICKNESS, SLOW_DIP_SPEED)
+				lift.move_microns(SLOW_DIP_DIST, SLOW_DIP_SPEED)
+				time.sleep(DIP_WAIT)
+				lift.move_microns(-SLOW_DIP_DIST+SLICE_THICKNESS, SLOW_DIP_SPEED)
 
-                time.sleep(RESIN_SETTLE)
+				time.sleep(RESIN_SETTLE)
 
-                display.display(slice_image)
-                time.sleep(display_time)
+				display.display(slice_image)
+				time.sleep(display_time)
 
 
-        print "Print completed in " + time.strftime('%H:%M:%S', time.gmtime(time.time()-start_time))
-    except:
-        traceback.print_exception(*sys.exc_info())
+		print "Print completed in " + time.strftime('%H:%M:%S', time.gmtime(time.time()-start_time))
+	except:
+		traceback.print_exception(*sys.exc_info())
 
-    display.black()
-    lift.home(OPTIMUM_LIFT_SPEED)
-    lift.shutdown()
-    display.shutdown()
+	display.black()
+	lift.home(OPTIMUM_LIFT_SPEED)
+	lift.shutdown()
+	display.shutdown()
 
 ###############################################################################
 ##
@@ -340,57 +340,57 @@ def print_object():
 ##
 ###############################################################################
 def process_arguments(arguments):
-    global OBJECT_PATH
-    global GCODE_FILE
-    global SLICE_PREFIX
-    global CALIBRATE
-    global SUPERCALI
-    global NUM_SLICES
+	global OBJECT_PATH
+	global GCODE_FILE
+	global SLICE_PREFIX
+	global CALIBRATE
+	global SUPERCALI
+	global NUM_SLICES
 
-    for arg in arguments[1:]:
-        if arg == "calibrate":
-            CALIBRATE = True
-        if arg == "supercali":
-            SUPERCALI = True
-        if (os.path.isdir(arg)):
-            OBJECT_PATH = os.path.abspath(arg)
-        else:
-            print(arg + " is not a directory!")
-            exit()
+	for arg in arguments[1:]:
+		if arg == "calibrate":
+			CALIBRATE = True
+		if arg == "supercali":
+			SUPERCALI = True
+		if (os.path.isdir(arg)):
+			OBJECT_PATH = os.path.abspath(arg)
+		else:
+			print(arg + " is not a directory!")
+			exit()
 
-    # Path not given
-    if not OBJECT_PATH:
-        print(usageStr)
-        exit()
+	# Path not given
+	if not OBJECT_PATH:
+		print(usageStr)
+		exit()
 
-    # Look for slices
-    for objs in os.listdir(OBJECT_PATH):
-        total_path = OBJECT_PATH+"/"+objs
+	# Look for slices
+	for objs in os.listdir(OBJECT_PATH):
+		total_path = OBJECT_PATH+"/"+objs
 
-        slice_match = re.match("(.+?)[0-9]+\.png", total_path)
-        if slice_match:
-            NUM_SLICES += 1
-            SLICE_PREFIX = slice_match.group(1)
+		slice_match = re.match("(.+?)[0-9]+\.png", total_path)
+		if slice_match:
+			NUM_SLICES += 1
+			SLICE_PREFIX = slice_match.group(1)
 
-    if not SLICE_PREFIX:
-        print "Missing slices!"
-        exit()
+	if not SLICE_PREFIX:
+		print "Missing slices!"
+		exit()
 
-    print "Image path prefix: " + SLICE_PREFIX
-    print "Found {:d} slice images.".format(NUM_SLICES)
+	print "Image path prefix: " + SLICE_PREFIX
+	print "Found {:d} slice images.".format(NUM_SLICES)
 
-    if CALIBRATE:
-        NUM_SLICES = CALIBRATE_HEIGHT/SLICE_THICKNESS
+	if CALIBRATE:
+		NUM_SLICES = CALIBRATE_HEIGHT/SLICE_THICKNESS
 
-    if SUPERCALI:
-        NUM_SLICES = (SUPERCALI_BASE_HEIGHT - FIRST_SLICE_THICKNESS + SUPERCALI_POST_HEIGHT) / SLICE_THICKNESS + 1
+	if SUPERCALI:
+		NUM_SLICES = (SUPERCALI_BASE_HEIGHT - FIRST_SLICE_THICKNESS + SUPERCALI_POST_HEIGHT) / SLICE_THICKNESS + 1
 
 
 if __name__ == '__main__':
-    process_arguments(sys.argv)
-    if CALIBRATE:
-        calibrate()
-    elif SUPERCALI:
-        supercali()
-    else:
-        print_object()
+	process_arguments(sys.argv)
+	if CALIBRATE:
+		calibrate()
+	elif SUPERCALI:
+		supercali()
+	else:
+		print_object()

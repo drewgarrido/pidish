@@ -1,27 +1,72 @@
-<html><head><title>Simple 3D Printer</title></head>
+<html><head><title>Simple 3D Printer</title>
+<style type="text/css">
+div.control_group {
+	float:left;    width:15em;    text-align:center;    padding:1em;    border:1px black solid;
+}
+</style>
+</head>
 <body style="text-align:center">
-<div style="max-width:40em;text-align:left;margin-left:auto;margin-right:auto;">
+<div style="max-width:35em;text-align:left;margin: 0 auto;padding:0;">
 
 <iframe src="status" height="150px" width="100%">Status here</iframe>
 
-<div style="float:left;width:15em;text-align:center;padding:1em;border:1px black solid;">
+<div class="control_group">
 <h3>Lift Controls</h3>
 <form action="" method="post">
 <input type="submit" name="command" value="Home" style="width:100%">
+</form>
+<form action="" method="post">
+<input type="hidden" name="command" value="reset_zero">
+<input type="submit" value="Set current location as Home" style="width:100%">
 </form>
 <br>
 <form action="" method="post">
 <input type="hidden" name="command" value="lift_move">
 <input type="submit" name="dir" value="Up" style="width:100%"><br>
-<table style="margin-left: auto;margin-right: auto;">
-<tr><td style="text-align:right">Microns:</td><td><input name="amount" value="1000" style="width:4em"></td></tr>
-<tr><td style="text-align:right">Microns / Sec:</td><td><input name="speed" value="5280" style="width:4em"></td></tr>
+<table style="margin: 0 auto;">
+<tr><td style="text-align:right">Microns:</td><td><input name="lift_amount" value="$lift_amount" style="width:4em"></td></tr>
+<tr><td style="text-align:right">Microns / Sec:</td><td><input name="lift_speed" value="$lift_speed" style="width:4em"></td></tr>
 </table>
 <input type="submit" name="dir" value="Down" style="width:100%">
 </form>
 </div>
 
-<div style="float:left;width:10em;text-align:center;padding:1em;border:1px black solid;">
+<div class="control_group">
+<h3>Print Object</h3>
+
+<form action="" enctype="multipart/form-data" method="post">
+<input type="hidden" name="command" value="upload">
+Please specify a .zip:<br>
+<input type="file" name="datafile" size="40">
+<br>
+<input type="submit" value="Upload">
+</form>
+
+<br>
+
+<form action="" method="post">
+Ensure lift is at the starting location (about 25400 microns from home
+position) and resin is prepared for printing BEFORE starting a print.
+<br><br>
+<table style="margin: 0 auto">
+<tr><td style="text-align:right">Exposure Time:</td><td><input name="exposure_time" value="$exposure_time" style="width:4em"></td></tr>
+</table>
+<br>
+<select name="object_path">
+$object_path_options
+</select>
+
+<input type="hidden" name="command" value="print_object">
+<input type="submit" value="Start Print">
+</form>
+<form action="" method="post">
+<input type="hidden" name="command" value="refresh_list">
+<input type="submit" value="Refresh Print List">
+</form>
+</div>
+
+
+<div class="control_group">
 <h3>Projector Controls</h3>
 <form action="" method="post">
 <input type="submit" name="command" value="Blank" style="width:100%">
@@ -30,6 +75,20 @@
 <input type="submit" name="command" value="Focus" style="width:100%">
 </form>
 </div>
+
+
+<div class="control_group">
+<h3>Calibration</h3>
+<form action="" method="post">
+<table style="margin: 0 auto;">
+<tr><td style="text-align:right">Minimum Time:</td><td><input name="cali_min_time" value="$cali_min_time" style="width:4em"></td></tr>
+<tr><td style="text-align:right">Maximum Time:</td><td><input name="cali_max_time" value="$cali_max_time" style="width:4em"></td></tr>
+</table>
+<input type="hidden" name="command" value="calibration">
+<input type="submit" value="Start" style="width:100%">
+</form>
+</div>
+
 
 </div>
 

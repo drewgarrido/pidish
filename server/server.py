@@ -1,3 +1,18 @@
+# Copyright (C) 2015  Drew Garrido
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import time
 import BaseHTTPServer
 import cgi
@@ -6,12 +21,8 @@ import inspect
 import view
 from model import model
 
-
 HOST_NAME = ''   # Normally a domain name. Blank still allows IP address URL
 PORT_NUMBER = 80 # TCP port
-
-SYNC_MODEL = None
-VIEWS = {}
 
 def parse_url_args(args):
     parsing = {}
@@ -67,8 +78,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.wfile.write(view.index())
 
 if __name__ == '__main__':
-    global SYNC_MODEL
-
+    VIEWS = {}
     items = inspect.getmembers(view,predicate=inspect.isfunction)
     for item in items:
         VIEWS[item[0]]=item[1]
@@ -85,8 +95,9 @@ if __name__ == '__main__':
     httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
     print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
     try:
-        httpd.serve_forever()
-    except KeyboardInterrupt:
+        while SYNC_MODEL.running:
+            httpd.handle_request()
+    except:
         pass
     httpd.server_close()
     print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)

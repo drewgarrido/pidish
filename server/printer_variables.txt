@@ -1,0 +1,5 @@
+lift_speed: 5280
+lift_amount: 25400
+cali_min_time: 6.0
+cali_max_time: 17.0
+exposure_time: 5.0

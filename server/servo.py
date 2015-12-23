@@ -214,3 +214,12 @@ class BED_servo:
     ###########################################################################
     def get_angle(self):
         return ((self.location % self.steps_per_revolution) * pi) / self.steps_per_revolution
+    
+    ###########################################################################
+    ##
+    #   Resets the location variable, effectively setting the current lift
+    #   location as home
+    ##
+    ###########################################################################
+    def reset_home(self):
+        self.location = 0

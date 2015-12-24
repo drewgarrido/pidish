@@ -94,7 +94,7 @@ class model(threading.Thread):
                 else:
                     # Argument is invalid, do not execute!
                     return
-        
+                    
         self.save_printer_variables()
 
         if command["command"] == "calibration":

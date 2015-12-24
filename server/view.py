@@ -76,7 +76,7 @@ def index():
 def status():
     page_temp = STATUS_TEMPLATE
     page = page_temp.safe_substitute(title_status=SYNC_MODEL.title_status,
-                                        sub_status=SYNC_MODEL.sub_status,
-                                        curtime=time.strftime("%H:%M:%S"))
+                                     sub_status=SYNC_MODEL.sub_status,
+                                     curtime=time.strftime("%H:%M:%S"))
 
     return page

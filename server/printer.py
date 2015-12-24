@@ -20,7 +20,7 @@ import os, time, sys, inspect, traceback, re
 #   Set server_test to True if running on a PC without the RPi
 #
 ###############################################################################
-SERVER_TEST = True
+SERVER_TEST = False
 
 if SERVER_TEST:
     from servo_test import BED_servo
@@ -51,10 +51,15 @@ LIFT_PLATE_THICKNESS    = 5000      # microns
 
 # Dip controls
 DIP_DISTANCE            = 3000      # microns
-DIP_WAIT                = 2.0       # seconds
 DIP_SPEED_DOWN          = 1000       # microns/s
 DIP_SPEED_UP            = DIP_SPEED_DOWN                # microns/s
-RESIN_SETTLE            = 8.0       # seconds
+
+if SERVER_TEST:
+    DIP_WAIT            = 0.25
+    RESIN_SETTLE        = 0.25
+else:
+    DIP_WAIT            = 2.0       # seconds
+    RESIN_SETTLE        = 8.0       # seconds
 
 SLOW_DIP_SPEED          = 20        # microns/s
 SLOW_DIP_DIST           = 1000      # microns
@@ -118,14 +123,14 @@ def run(conn):
         SERVER_CONN.send(["SHUTDOWN", None])
 
 def lift_move(args):
-    update_status("Lift moving %s" % (args['dir']), "%d microns at %d microns/s" % (int(args['amount']),int(args['speed'])))
+    update_status("Lift moving %s" % (args['dir']), "%d microns at %d microns/s" % (int(args['lift_amount']),int(args['lift_speed'])))
 
     LIFT.on()
 
-    amount = float(args['amount'])
+    amount = float(args['lift_amount'])
     if args['dir'] == "Up":
         amount = -amount
-    LIFT.move_microns(amount, float(args['speed']))
+    LIFT.move_microns(amount, float(args['lift_speed']))
 
     LIFT.off()
 
@@ -305,11 +310,17 @@ def calibration(args):
 
             DISPLAY.display(slice_prefix+"0000.png")
 
-            time.sleep(cali_min_time)
+            if layer < 3:
+                time.sleep(cali_min_time * FIRST_SLICE_TIME_FACTOR)
+            else:
+                time.sleep(cali_min_time)
 
             for j in xrange(1,9):
                 DISPLAY.display(slice_prefix+"{:04d}.png".format(j))
-                time.sleep(cali_time_delta)
+                if layer < 3:
+                    time.sleep(cali_time_delta * FIRST_SLICE_TIME_FACTOR)
+                else:
+                    time.sleep(cali_time_delta)
 
             DISPLAY.black()
 
